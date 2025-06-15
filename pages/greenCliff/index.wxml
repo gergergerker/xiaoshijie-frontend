@@ -1,0 +1,389 @@
+<!-- 绿崖时序页面 - 简化版 -->
+<view class="greencliff-container">
+  <!-- 落叶动画 -->
+  <view class="leaf leaf-1"></view>
+  <view class="leaf leaf-2"></view>
+  <view class="leaf leaf-3"></view>
+  <view class="leaf leaf-4"></view>
+  <view class="leaf leaf-5"></view>
+  <view class="leaf leaf-6"></view>
+  <view class="leaf leaf-7"></view>
+  <view class="leaf leaf-8"></view>
+  
+  <!-- 页面标题 -->
+  <view class="page-title" wx:if="{{showScrolls}}">
+    <text>一馆一序・时节经纬</text>
+  </view>
+
+  <!-- 展示画轴部分 -->
+  <view class="scrolls-container" wx:if="{{showScrolls}}">
+    <!-- 晓城博物馆画轴 -->
+    <view class="scroll-item" bindtap="onSelectScroll" data-type="city">
+      <view class="scroll-image city-scroll-image">
+        <image src="pic/晓城.jpg" mode="aspectFill"></image>
+      </view>
+      <view class="scroll-info">
+        <view class="scroll-title">晓城博物馆</view>
+        <view class="scroll-desc">城市百科</view>
+      </view>
+    </view>
+
+    <!-- 晓时博物馆画轴 -->
+    <view class="scroll-item" bindtap="onSelectScroll" data-type="season">
+      <view class="scroll-image season-scroll-image">
+        <image src="pic/晓时.jpg" mode="aspectFill"></image>
+      </view>
+      <view class="scroll-info">
+        <view class="scroll-title">晓时博物馆</view>
+        <view class="scroll-desc">时节百科</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 选择画轴后显示的主内容区域 -->
+  <view class="museum-container" wx:if="{{!showScrolls}}">
+    <!-- 顶部导航 -->
+    <view class="top-navigation">
+      <view class="back-btn" bindtap="onBack">
+        <text>返回</text>
+      </view>
+      <view class="museum-banner">
+        <text wx:if="{{selectedType === 'city'}}">晓城博物馆</text>
+        <text wx:if="{{selectedType === 'season'}}">晓时博物馆</text>
+      </view>
+      <view class="tree-count-badge" wx:if="{{selectedType === 'city'}}">
+        <text>🌳 {{treeCount}}</text>
+      </view>
+      <view class="back-btn chapter-select-btn" bindtap="toggleChapterMenu" wx:if="{{selectedType === 'city'}}">
+        <text>选择篇章</text>
+      </view>
+      <view class="tree-count-badge" wx:if="{{selectedType === 'season'}}">
+        <text>🌳 {{treeCount}}</text>
+      </view>
+      <view class="back-btn chapter-select-btn" bindtap="toggleSeasonAreaMenu" wx:if="{{selectedType === 'season'}}">
+        <text>选择区域</text>
+      </view>
+    </view>
+
+    <!-- 章节选择菜单 -->
+    <view class="chapter-menu {{showChapterMenu ? 'show' : ''}}" wx:if="{{showChapterMenu}}">
+      <view class="chapter-menu-item" wx:for="{{cityMuseum.chapters}}" wx:key="id" bindtap="selectChapter" data-chapter="{{item.id}}">
+        <text>{{item.name}}</text>
+      </view>
+      <view class="chapter-menu-item" bindtap="selectChapter" data-chapter="">
+        <text>显示全部</text>
+      </view>
+    </view>
+    
+    <!-- 区域选择菜单 -->
+    <view class="chapter-menu {{showSeasonAreaMenu ? 'show' : ''}}" wx:if="{{showSeasonAreaMenu}}">
+      <view class="chapter-menu-item" wx:for="{{seasonMuseum.areas}}" wx:key="id" bindtap="selectSeasonArea" data-area="{{item.id}}">
+        <text>{{item.name}}</text>
+      </view>
+      <view class="chapter-menu-item" bindtap="selectSeasonArea" data-area="">
+        <text>显示全部</text>
+      </view>
+    </view>
+
+    <!-- 城市博物馆内容 -->
+    <view class="city-museum-content" wx:if="{{selectedType === 'city'}}">
+      <!-- 欢迎提示 -->
+      <view class="instruction-card" wx:if="{{!filteredChapter}}">
+        <view class="instruction-title">欢迎来到晓城博物馆</view>
+        <view class="instruction-content">点击卡片，进行探索吧！</view>
+        <view class="instruction-hint">如果🌳数量不够，可以去其他页面参与答题哦～</view>
+      </view>
+      
+      <!-- 诗画古城轮播区 -->
+      <view class="city-poetry-container">
+        <view class="poetry-title">
+          <view class="poetry-title-decor"></view>
+          诗画古城
+          <view class="poetry-title-decor"></view>
+        </view>
+        <swiper class="poetry-carousel" 
+                autoplay="{{true}}" 
+                interval="5000" 
+                circular="{{true}}" 
+                previous-margin="0" 
+                next-margin="0" 
+                display-multiple-items="1"
+                bindchange="onPoetrySwiperChange">
+          <block wx:for="{{cityPoetry}}" wx:key="index">
+            <swiper-item class="poetry-card" bindtap="showPoetryDetail" data-index="{{index}}">
+              <view class="poetry-content">
+                <image class="poetry-bg-image" src="pic/诗词轮播.jpg" mode="aspectFill"></image>
+                <view class="poet-city-row">
+                  <view class="poetry-poet">{{item.poet}}</view>
+                  <view class="poetry-city">{{item.city}}</view>
+                </view>
+                <view class="poetry-verse">
+                  <text class="verse-line">{{item.verse}}</text>
+                </view>
+              </view>
+            </swiper-item>
+          </block>
+        </swiper>
+      </view>
+      
+      <!-- 章节卡片区域 -->
+      <view class="chapters-container">
+        <!-- 概念篇 - 免费 -->
+        <view class="chapter-card" 
+              wx:if="{{!filteredChapter || filteredChapter === 'concept'}}"
+              bindtap="openCityChapter" 
+              data-chapter="concept">
+          <view class="chapter-front">
+            <image class="chapter-image" src="pic/概念篇.jpg" mode="aspectFit"></image>
+            <view class="chapter-title">概念篇</view>
+            <view class="unlock-status free">免费</view>
+          </view>
+        </view>
+        
+        <!-- 起源篇 - 15颗 -->
+        <view class="chapter-card" 
+              wx:if="{{!filteredChapter || filteredChapter === 'origin'}}"
+              bindtap="openCityChapter" 
+              data-chapter="origin">
+          <view class="chapter-front">
+            <image class="chapter-image" src="pic/起源篇.jpg" mode="aspectFit"></image>
+            <view class="chapter-title">起源篇</view>
+            <view class="unlock-status">15 🌳</view>
+          </view>
+        </view>
+        
+        <!-- 古城篇 - 15颗 -->
+        <view class="chapter-card" 
+              wx:if="{{!filteredChapter || filteredChapter === 'ancient'}}"
+              bindtap="openCityChapter" 
+              data-chapter="ancient">
+          <view class="chapter-front">
+            <image class="chapter-image" src="pic/古城篇.jpg" mode="aspectFit"></image>
+            <view class="chapter-title">古城篇</view>
+            <view class="unlock-status">15 🌳</view>
+          </view>
+        </view>
+        
+        <!-- 规模篇 - 15颗 -->
+        <view class="chapter-card" 
+              wx:if="{{!filteredChapter || filteredChapter === 'scale'}}"
+              bindtap="openCityChapter" 
+              data-chapter="scale">
+          <view class="chapter-front">
+            <image class="chapter-image" src="pic/规模篇.jpg" mode="aspectFit"></image>
+            <view class="chapter-title">规模篇</view>
+            <view class="unlock-status">15 🌳</view>
+          </view>
+        </view>
+        
+        <!-- 职能篇 - 15颗 -->
+        <view class="chapter-card" 
+              wx:if="{{!filteredChapter || filteredChapter === 'function'}}"
+              bindtap="openCityChapter" 
+              data-chapter="function">
+          <view class="chapter-front">
+            <image class="chapter-image" src="pic/职能篇.jpg" mode="aspectFit"></image>
+            <view class="chapter-title">职能篇</view>
+            <view class="unlock-status">15 🌳</view>
+          </view>
+        </view>
+        
+        <!-- 位置篇 - 50颗 -->
+        <view class="chapter-card" 
+              wx:if="{{!filteredChapter || filteredChapter === 'location'}}"
+              bindtap="openCityChapter" 
+              data-chapter="location">
+          <view class="chapter-front">
+            <image class="chapter-image" src="pic/位置篇.jpg" mode="aspectFit"></image>
+            <view class="chapter-title">位置篇</view>
+            <view class="unlock-status">50 🌳</view>
+          </view>
+        </view>
+        
+        <!-- 形态篇 - 50颗 -->
+        <view class="chapter-card" 
+              wx:if="{{!filteredChapter || filteredChapter === 'form'}}"
+              bindtap="openCityChapter" 
+              data-chapter="form">
+          <view class="chapter-front">
+            <image class="chapter-image" src="pic/形态篇.jpg" mode="aspectFit"></image>
+            <view class="chapter-title">形态篇</view>
+            <view class="unlock-status">50 🌳</view>
+          </view>
+        </view>
+        
+        <!-- 首都篇 - 25颗 -->
+        <view class="chapter-card" 
+              wx:if="{{!filteredChapter || filteredChapter === 'capital'}}"
+              bindtap="openCityChapter" 
+              data-chapter="capital">
+          <view class="chapter-front">
+            <image class="chapter-image" src="pic/首都篇.jpg" mode="aspectFit"></image>
+            <view class="chapter-title">首都篇</view>
+            <view class="unlock-status">25 🌳</view>
+          </view>
+        </view>
+        
+        <!-- 名著篇 - 50颗 -->
+        <view class="chapter-card" 
+              wx:if="{{!filteredChapter || filteredChapter === 'literature'}}"
+              bindtap="openCityChapter" 
+              data-chapter="literature">
+          <view class="chapter-front">
+            <image class="chapter-image" src="pic/名著篇.jpg" mode="aspectFit"></image>
+            <view class="chapter-title">名著篇</view>
+            <view class="unlock-status">50 🌳</view>
+          </view>
+        </view>
+        
+        <!-- 名称篇 - 35颗 -->
+        <view class="chapter-card" 
+              wx:if="{{!filteredChapter || filteredChapter === 'ranking'}}"
+              bindtap="openCityChapter" 
+              data-chapter="ranking">
+          <view class="chapter-front">
+            <image class="chapter-image" src="pic/榜单篇.jpg" mode="aspectFit"></image>
+            <view class="chapter-title">名称篇</view>
+            <view class="unlock-status">35 🌳</view>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 时节博物馆内容 -->
+    <view class="season-museum-content" wx:if="{{selectedType === 'season'}}">
+      <!-- 欢迎提示 -->
+      <view class="instruction-card">
+        <view class="instruction-title">欢迎来到晓时博物馆</view>
+        <view class="instruction-content">探索中国传统二十四节气的魅力</view>
+        <view class="instruction-content">邂逅千年时光里的自然智慧</view>
+      </view>
+      
+      <!-- 二十四节气轮播区 -->
+      <view class="solar-terms-container">
+        <image class="poetry-bg-image" src="pic/诗词轮播.jpg" mode="aspectFill"></image>
+        <view class="solar-terms-title">
+          <view class="title-decor"></view>
+          <text>二十四节气</text>
+          <view class="title-decor"></view>
+        </view>
+        <swiper class="terms-swiper" autoplay="{{true}}" interval="4000" circular="{{true}}">
+          <block wx:for="{{solarTerms}}" wx:key="index">
+            <swiper-item class="term-swiper-item" bindtap="selectSolarTerm" data-index="{{index}}">
+              <view class="term-simple">
+                <view class="term-row">
+                  <text class="term-name">{{item.name}}</text>
+                  <text class="term-separator">·</text>
+                  <text class="term-phenology">{{item.phenology[0]}}</text>
+                </view>
+                <view class="term-row">
+                  <text class="term-phenology">{{item.phenology[1]}}</text>
+                  <text class="term-separator">·</text>
+                  <text class="term-phenology">{{item.phenology[2]}}</text>
+                </view>
+              </view>
+            </swiper-item>
+          </block>
+        </swiper>
+        
+        <!-- 季节按钮 -->
+        <view class="season-buttons">
+          <view class="season-button all-button" bindtap="openSeasonIntro" data-season="all">
+            <text class="season-button-text">基础</text>
+          </view>
+          <view class="season-button spring-button" bindtap="openSeasonIntro" data-season="spring">
+            <text class="season-button-text">春季</text>
+          </view>
+          <view class="season-button summer-button" bindtap="openSeasonIntro" data-season="summer">
+            <text class="season-button-text">夏季</text>
+          </view>
+          <view class="season-button autumn-button" bindtap="openSeasonIntro" data-season="autumn">
+            <text class="season-button-text">秋季</text>
+          </view>
+          <view class="season-button winter-button" bindtap="openSeasonIntro" data-season="winter">
+            <text class="season-button-text">冬季</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 博物馆区域 -->
+      <view class="museum-areas-container">
+        <view class="section-title">博物馆分区</view>
+        
+        <view class="museum-areas">
+          <!-- 天文区 - 10颗 -->
+          <view class="museum-area-card" 
+                wx:if="{{!filteredArea || filteredArea === 'astronomy'}}"
+                bindtap="openSeasonArea" data-area="astronomy">
+            <image class="area-image" src="picseason/天文区.jpg" mode="aspectFill"></image>
+            <view class="area-title">天文区</view>
+            <view class="unlock-status">10 🌳</view>
+          </view>
+          
+          <!-- 气候区 - 20颗 -->
+          <view class="museum-area-card" 
+                wx:if="{{!filteredArea || filteredArea === 'climate'}}"
+                bindtap="openSeasonArea" data-area="climate">
+            <image class="area-image" src="picseason/气候区.jpg" mode="aspectFill"></image>
+            <view class="area-title">气候区</view>
+            <view class="unlock-status">20 🌳</view>
+          </view>
+          
+          <!-- 工具区 - 5颗 -->
+          <view class="museum-area-card" 
+                wx:if="{{!filteredArea || filteredArea === 'tools'}}"
+                bindtap="openSeasonArea" data-area="tools">
+            <image class="area-image" src="picseason/工具区.jpg" mode="aspectFill"></image>
+            <view class="area-title">工具区</view>
+            <view class="unlock-status">5 🌳</view>
+          </view>
+          
+          <!-- 历法区 - 50颗 -->
+          <view class="museum-area-card" 
+                wx:if="{{!filteredArea || filteredArea === 'calendar'}}"
+                bindtap="openSeasonArea" data-area="calendar">
+            <image class="area-image" src="picseason/历法区.jpg" mode="aspectFill"></image>
+            <view class="area-title">历法区</view>
+            <view class="unlock-status">50 🌳</view>
+          </view>
+          
+          <!-- 作物区 - 10颗 -->
+          <view class="museum-area-card" 
+                wx:if="{{!filteredArea || filteredArea === 'crops'}}"
+                bindtap="openSeasonArea" data-area="crops">
+            <image class="area-image" src="picseason/作物区.jpg" mode="aspectFill"></image>
+            <view class="area-title">作物区</view>
+            <view class="unlock-status">10 🌳</view>
+          </view>
+          
+          <!-- 绘画区 - 10颗 -->
+          <view class="museum-area-card" 
+                wx:if="{{!filteredArea || filteredArea === 'painting'}}"
+                bindtap="openSeasonArea" data-area="painting">
+            <image class="area-image" src="picseason/绘画区.jpg" mode="aspectFill"></image>
+            <view class="area-title">绘画区</view>
+            <view class="unlock-status">10 🌳</view>
+          </view>
+          
+          <!-- 文学区 - 50颗 -->
+          <view class="museum-area-card" 
+                wx:if="{{!filteredArea || filteredArea === 'literature'}}"
+                bindtap="openSeasonArea" data-area="literature">
+            <image class="area-image" src="picseason/文学区.jpg" mode="aspectFill"></image>
+            <view class="area-title">文学区</view>
+            <view class="unlock-status">50 🌳</view>
+          </view>
+          
+          <!-- 音乐区 - 免费 -->
+          <view class="museum-area-card" 
+                wx:if="{{!filteredArea || filteredArea === 'music'}}"
+                bindtap="openSeasonArea" data-area="music">
+            <image class="area-image" src="picseason/音乐区.jpg" mode="aspectFill"></image>
+            <view class="area-title">音乐区</view>
+            <view class="unlock-status free">免费</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

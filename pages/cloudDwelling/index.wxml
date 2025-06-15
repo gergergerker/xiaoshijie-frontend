@@ -1,0 +1,240 @@
+<!-- cloudDwelling页面 - 用户主页 -->
+<view class="cloud-dwelling-container">
+  <!-- 用户信息区域 -->
+  <view class="user-profile-section">
+    <view class="user-info">
+      <view class="avatar-container">
+        <block wx:if="{{avatarUrl}}">
+          <image class="user-avatar-image" src="{{avatarUrl}}" mode="aspectFill"></image>
+        </block>
+        <view class="user-avatar" wx:else>时</view>
+      </view>
+      <view class="user-details">
+        <view class="username-container">
+          <!-- 根据登录状态显示不同内容 -->
+          <block wx:if="{{isLoggedIn}}">
+            <view class="username">{{username}}</view>
+            <!-- 登录状态下树木展示在用户名右侧 -->
+            <view class="tree-count-container login-state">
+              <text class="tree-count-total">🌳 {{treeCount}}棵</text>
+            </view>
+          </block>
+          <block wx:else>
+            <view class="username not-logged">未登录</view>
+            <!-- 微信手机号授权按钮 -->
+            <button class="login-button-inline" open-type="getPhoneNumber" bindgetphonenumber="getPhoneNumber">
+              一键登录
+            </button>
+            <!-- 未登录状态下树木展示在登录按钮右侧 -->
+            <view class="tree-count-container">
+              <text class="tree-count-total">🌳 {{treeCount}}棵</text>
+            </view>
+          </block>
+        </view>
+        <view class="tree-details-row">
+          <text class="tree-source">竞答:{{lantingTrees}}</text>
+          <text class="tree-source">漫游:{{timeSequenceTrees}}</text>
+          <text class="tree-source">已用:{{consumedTrees}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 用户操作按钮 -->
+    <view class="user-actions">
+      <!-- 设置按钮 -->
+      <view class="settings-button" bindtap="openSettings">
+        <text>设置晓时信息</text>
+      </view>
+      
+      <!-- 会员按钮 -->
+      <view class="membership-button" bindtap="upgradeMembership">
+        <text>开通晓时会员</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 时节展示区域 -->
+  <view class="season-display-section">
+    <view class="section-title">
+      <text>当前时节</text>
+    </view>
+    
+    <view class="current-season">
+      <view class="season-image-container">
+        <image class="season-image" src="{{currentSeason.imageUrl || '../../images/season-current.jpg'}}" mode="aspectFill"></image>
+      </view>
+      <view class="season-info">
+        <view class="season-header">
+          <view class="season-name-date">
+            <text class="season-name">{{currentSeason.name}}</text>
+            <text class="season-date">{{currentSeason.date}}</text>
+          </view>
+          <view class="season-countdown" wx:if="{{!isExactlyOnSolarTerm}}">
+            <text>距离{{nextSeasonName}}还有{{daysToNextSeason}}天</text>
+          </view>
+        </view>
+        <view class="season-description">{{currentSeason.description}}</view>
+      </view>
+    </view>
+    
+    <view class="season-quote">
+      <text>"{{currentSeason.quote}}"</text>
+    </view>
+  </view>
+
+  <!-- 时节探索区域 -->
+  <view class="exploration-section">
+    <view class="section-title">
+      <text>时节探索</text>
+    </view>
+    
+    <view class="exploration-cards">
+      <!-- 时城博览 (关联 greenCliff 页面) -->
+      <view class="exploration-card" bindtap="navigateTo" data-page="greenCliff">
+        <view class="card-icon">🏞️</view>
+        <view class="card-content">
+          <view class="card-title">时城博览</view>
+          <view class="card-description">博览时城岁月迹，探寻节令往来踪</view>
+        </view>
+      </view>
+      
+      <!-- 时城漫游 (关联 timeSequence 页面) -->
+      <view class="exploration-card" bindtap="navigateTo" data-page="timeSequence">
+        <view class="card-icon">🍃</view>
+        <view class="card-content">
+          <view class="card-title">时城漫游</view>
+          <view class="card-description">每日一城寻故事，应时应景游四方</view>
+        </view>
+      </view>
+      
+      <!-- 时城竞答 (关联 lanTing 页面) -->
+      <view class="exploration-card" bindtap="navigateTo" data-page="lanTing">
+        <view class="card-icon">📜</view>
+        <view class="card-content">
+          <view class="card-title">时城竞答</view>
+          <view class="card-description">漫步楼台烟雨中，细品好雨知时节</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 足迹列表区域 -->
+  <view class="footprints-section">
+    <view class="section-title">
+      <text>我的足迹</text>
+    </view>
+    
+    <view class="footprints-container">
+      <block wx:if="{{footprints && footprints.length > 0}}">
+        <scroll-view scroll-x class="footprints-scroll">
+          <view class="footprints-list">
+            <view class="footprint-card" wx:for="{{footprints}}" wx:key="timestamp" bindtap="viewFootprintCity" data-city="{{item}}">
+              <view class="footprint-icon">👣</view>
+              <view class="footprint-info">
+                <view class="footprint-city">{{item.cityName}}</view>
+                <view class="footprint-date">{{item.date}}</view>
+              </view>
+            </view>
+          </view>
+        </scroll-view>
+        <view class="footprints-more" bindtap="viewAllFootprints">查看全部</view>
+      </block>
+      <view class="empty-footprints" wx:else>
+        <view class="empty-icon">🗺️</view>
+        <view class="empty-text">您还没有留下足迹</view>
+        <view class="empty-action" bindtap="navigateTo" data-page="timeSequence">去城市漫游</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 用户活动区域 -->
+  <view class="activity-section">
+    <view class="section-title">
+      <text>近期活动</text>
+    </view>
+    
+    <view class="activity-list">
+      <view class="activity-item" wx:for="{{activities}}" wx:key="id">
+        <view class="activity-time">{{item.time}}</view>
+        <view class="activity-content">
+          <text class="activity-text">{{item.text}}</text>
+          <view class="activity-reward" wx:if="{{item.reward}}">
+            <text>+ {{item.reward}} 🌳</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 系统设置区域 -->
+  <view class="settings-section">
+    <view class="section-title">
+      <text>系统设置</text>
+    </view>
+    
+    <view class="settings-list">
+      <view class="settings-item" bindtap="navigateToSystemPage" data-page="about">
+        <view class="settings-icon">📖</view>
+        <view class="settings-content">
+          <text class="settings-text">关于我们</text>
+        </view>
+        <view class="settings-arrow">></view>
+      </view>
+      
+      <view class="settings-item" bindtap="navigateToSystemPage" data-page="userAgreement">
+        <view class="settings-icon">📝</view>
+        <view class="settings-content">
+          <text class="settings-text">用户协议</text>
+        </view>
+        <view class="settings-arrow">></view>
+      </view>
+      
+      <view class="settings-item" bindtap="navigateToSystemPage" data-page="privacyPolicy">
+        <view class="settings-icon">🔒</view>
+        <view class="settings-content">
+          <text class="settings-text">隐私政策</text>
+        </view>
+        <view class="settings-arrow">></view>
+      </view>
+      
+      <view class="settings-item" bindtap="navigateToSystemPage" data-page="contactUs">
+        <view class="settings-icon">📞</view>
+        <view class="settings-content">
+          <text class="settings-text">联系客服</text>
+        </view>
+        <view class="settings-arrow">></view>
+      </view>
+      
+      <view class="settings-item" bindtap="clearCache">
+        <view class="settings-icon">🧹</view>
+        <view class="settings-content">
+          <text class="settings-text">清除缓存</text>
+        </view>
+        <view class="settings-arrow">></view>
+      </view>
+    </view>
+    
+    <view class="app-version">
+      <text>晓时节 v1.0.0</text>
+    </view>
+  </view>
+
+  <!-- 关于我们弹窗 -->
+  <view class="about-dialog-mask" wx:if="{{showAboutDialog}}" bindtap="closeAboutDialog">
+    <view class="about-dialog" catchtap="catchDialogTap">
+      <view class="about-dialog-header">
+        <view class="about-dialog-title">关于我们</view>
+        <view class="about-dialog-close" bindtap="closeAboutDialog">×</view>
+      </view>
+      <view class="about-dialog-content">
+        <view class="about-app-name">{{aboutInfo.name}} <text class="about-app-version">{{aboutInfo.version}}</text></view>
+        <view class="about-app-desc">{{aboutInfo.description}}</view>
+        <view class="about-app-contact" bindtap="copyEmail">
+          <text class="contact-label">联系邮箱: </text>
+          <text class="contact-value">{{aboutInfo.email}}</text>
+        </view>
+        <view class="about-app-copyright">{{aboutInfo.copyright}}</view>
+      </view>
+    </view>
+  </view>
+</view>

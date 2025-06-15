@@ -1,0 +1,47 @@
+{
+  "pages": [
+    "pages/greenCliff/index",
+    "pages/cloudDwelling/index",
+    "pages/timeSequence/index",
+    "pages/lanTing/index",
+    "pages/pkBattle/index",
+    "pages/articleDetail/index",
+    "pages/membership/index",
+    "pages/footprints/index",
+    "pages/agreement/index",
+    "pages/contact/index"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#e8f5e9",
+    "navigationBarTitleText": "晓时节",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#e8f5e9"
+  },
+  "tabBar": {
+    "color": "#7A7E83",
+    "selectedColor": "#4CAF50",
+    "backgroundColor": "#e8f5e9",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/cloudDwelling/index",
+        "text": "晓主页"
+      },
+      {
+        "pagePath": "pages/greenCliff/index",
+        "text": "博物馆"
+      },
+      {
+        "pagePath": "pages/timeSequence/index",
+        "text": "漫游记"
+      },
+      {
+        "pagePath": "pages/lanTing/index",
+        "text": "晓竞赛"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
